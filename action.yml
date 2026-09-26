@@ -1,8 +1,5 @@
 name: winseam audit
-description: >-
-  Find the places a Python project misbehaves on Windows -- subprocess(text=True)
-  and open() without an encoding, shutil.rmtree without onexc -- as a static pass
-  that runs on any runner, including Linux.
+description: "Find the Windows text and filesystem defects that pass on Linux CI: missing encoding=, rmtree without onexc."
 author: AlKor13
 branding:
   icon: alert-triangle
