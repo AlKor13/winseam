@@ -66,8 +66,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         description="Find and fix the places a Python tool misbehaves on Windows.")
     sub = parser.add_subparsers(dest="command")
 
-    audit = sub.add_parser("audit", help="scan a path for Windows text and filesystem defects")
-    audit.add_argument("path", nargs="?", default=".")
+    audit = sub.add_parser("audit", help="scan paths for Windows text and filesystem defects")
+    # Several paths, because pre-commit hands its hooks one argument per changed file.
+    audit.add_argument("paths", nargs="*", default=["."], metavar="PATH")
     audit.add_argument("--json", action="store_true", help="machine-readable output")
     audit.add_argument("--exit-zero", action="store_true",
                        help="always exit 0, for a non-blocking CI step")
@@ -81,11 +82,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         parser.print_help()
         return 2
 
-    findings = scan_path(args.path)
+    paths = args.paths or ["."]
+    findings = [f for path in paths for f in scan_path(path)]
     if args.json:
         print(json.dumps([f.as_dict() for f in findings], indent=2, ensure_ascii=False))
     else:
-        _print_report(findings, args.path)
+        _print_report(findings, ", ".join(paths))
     if args.exit_zero:
         return 0
     return 1 if findings else 0

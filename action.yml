@@ -1,0 +1,63 @@
+name: winseam audit
+description: >-
+  Find the places a Python project misbehaves on Windows -- subprocess(text=True)
+  and open() without an encoding, shutil.rmtree without onexc -- as a static pass
+  that runs on any runner, including Linux.
+author: AlKor13
+branding:
+  icon: alert-triangle
+  color: blue
+
+inputs:
+  path:
+    description: Path (or space-separated paths) to scan.
+    required: false
+    default: "."
+  fail-on-findings:
+    description: Fail the step when anything is found. Set to "false" to report only.
+    required: false
+    default: "true"
+  version:
+    description: Version of winseam to install, e.g. "0.1.0". Defaults to the latest.
+    required: false
+    default: ""
+  json-output:
+    description: Path to write the findings as JSON. Empty means no file.
+    required: false
+    default: ""
+
+outputs:
+  findings:
+    description: Number of findings.
+    value: ${{ steps.audit.outputs.findings }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install winseam
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.version }}" ]; then
+          python -m pip install --quiet "winseam==${{ inputs.version }}"
+        else
+          python -m pip install --quiet winseam
+        fi
+
+    - name: Audit
+      id: audit
+      shell: bash
+      run: |
+        set +e
+        winseam audit ${{ inputs.path }}
+        status=$?
+        winseam audit ${{ inputs.path }} --json > /tmp/winseam.json
+        count=$(python -c "import json;print(len(json.load(open('/tmp/winseam.json',encoding='utf-8'))))")
+        echo "findings=$count" >> "$GITHUB_OUTPUT"
+        echo "### winseam audit: $count finding(s)" >> "$GITHUB_STEP_SUMMARY"
+        if [ -n "${{ inputs.json-output }}" ]; then
+          cp /tmp/winseam.json "${{ inputs.json-output }}"
+        fi
+        if [ "${{ inputs.fail-on-findings }}" = "true" ]; then
+          exit $status
+        fi
+        exit 0

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="400" viewBox="0 0 900 400" role="img" aria-label="Terminal demo: subprocess text=True returns mojibake, winseam returns correct text">
+  <style>
+    .bg   { fill: #0d1117; }
+    .bar  { fill: #161b22; }
+    .t    { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace; font-size: 15px; }
+    .dim  { fill: #8b949e; }
+    .txt  { fill: #c9d1d9; }
+    .cmd  { fill: #79c0ff; }
+    .bad  { fill: #ff7b72; }
+    .good { fill: #7ee787; }
+    .key  { fill: #d2a8ff; }
+  </style>
+
+  <rect class="bg" width="900" height="400" rx="10"/>
+  <rect class="bar" width="900" height="34" rx="10"/>
+  <rect class="bar" y="24" width="900" height="10"/>
+  <circle cx="20" cy="17" r="6" fill="#ff5f56"/>
+  <circle cx="40" cy="17" r="6" fill="#ffbd2e"/>
+  <circle cx="60" cy="17" r="6" fill="#27c93f"/>
+  <text class="t dim" x="82" y="22">winseam — Windows has two default encodings at once</text>
+
+  <text class="t" x="22" y="70"><tspan class="dim">$</tspan> <tspan class="cmd">winseam doctor</tspan></text>
+  <text class="t txt" x="22" y="94">  locale code page  : <tspan class="key">cp1251</tspan>   <tspan class="dim">what subprocess(text=True) decodes with</tspan></text>
+  <text class="t txt" x="22" y="116">  console code page : <tspan class="key">cp866</tspan>    <tspan class="dim">what a console child actually writes</tspan></text>
+
+  <text class="t" x="22" y="164"><tspan class="dim">$</tspan> <tspan class="cmd">python -c "print('Тест — café')"</tspan>  <tspan class="dim">via subprocess(text=True)</tspan></text>
+  <text class="t bad" x="22" y="188">  РўРµСЃС‚ вЂ” cafГ©</text>
+
+  <text class="t" x="22" y="224"><tspan class="dim">$</tspan> <tspan class="cmd">cmd /c echo Тест</tspan>                    <tspan class="dim">via subprocess(text=True)</tspan></text>
+  <text class="t bad" x="22" y="248">  ’Ґбв</text>
+
+  <text class="t" x="22" y="292"><tspan class="dim">&gt;&gt;&gt;</tspan> <tspan class="cmd">from winseam import run</tspan></text>
+  <text class="t" x="22" y="314"><tspan class="dim">&gt;&gt;&gt;</tspan> <tspan class="cmd">run(["cmd", "/c", "echo Тест"])</tspan></text>
+  <text class="t" x="22" y="338">  stdout   <tspan class="good">'Тест'</tspan></text>
+  <text class="t" x="22" y="360">  encoding <tspan class="good">'cp866'</tspan>  <tspan class="dim">— it tells you which one answered, instead of guessing silently</tspan></text>
+  <text class="t dim" x="22" y="384">  pip install winseam</text>
+</svg>

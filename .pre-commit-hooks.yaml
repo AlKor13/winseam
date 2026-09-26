@@ -1,0 +1,18 @@
+- id: winseam-audit
+  name: winseam audit (Windows text and filesystem defects)
+  description: >-
+    Flag subprocess(text=True) and open() without an encoding, and shutil.rmtree
+    without onexc -- the constructs that work on Linux CI and fail on a user's
+    Windows machine.
+  entry: winseam audit
+  language: python
+  types: [python]
+  require_serial: false
+
+- id: winseam-audit-warn
+  name: winseam audit (report only)
+  description: Same scan, but never fails the commit -- for adopting it gradually.
+  entry: winseam audit --exit-zero
+  language: python
+  types: [python]
+  require_serial: false

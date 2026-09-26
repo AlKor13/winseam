@@ -1,5 +1,12 @@
 # winseam
 
+[![PyPI](https://img.shields.io/pypi/v/winseam.svg)](https://pypi.org/project/winseam/)
+[![Python](https://img.shields.io/pypi/pyversions/winseam.svg)](https://pypi.org/project/winseam/)
+[![CI](https://github.com/AlKor13/winseam/actions/workflows/ci.yml/badge.svg)](https://github.com/AlKor13/winseam/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+<img src="assets/demo.svg" alt="winseam doctor showing cp1251 and cp866 in force at once; subprocess text=True returning mojibake where winseam.run returns the correct text" width="100%">
+
 Your Python tool works. Then someone runs it on Windows, and the output is `РўРµСЃС‚ вЂ” cafГ©`, or `shutil.rmtree` refuses to delete a Git clone, or `json.load(open(path))` raises `UnicodeDecodeError` on a file that is plainly valid UTF-8.
 
 None of that is bad luck. Windows has **more than one default encoding at a time**, and the standard library decodes every child process with the wrong one.
@@ -101,6 +108,27 @@ It is a static pass, so it runs on Linux CI and on projects you do not own. `--j
 | WS002 | `open()` in text mode with no `encoding=` |
 | WS003 | `Path.read_text()` / `write_text()` with no `encoding=` |
 | WS004 | `shutil.rmtree()` with no `onexc=` |
+
+### In pre-commit
+
+```yaml
+repos:
+  - repo: https://github.com/AlKor13/winseam
+    rev: v0.1.0
+    hooks:
+      - id: winseam-audit          # or winseam-audit-warn, which never fails the commit
+```
+
+### In GitHub Actions
+
+```yaml
+      - uses: AlKor13/winseam@v0.1.0
+        with:
+          path: src
+          fail-on-findings: "false"   # report into the job summary while you adopt it
+```
+
+The audit is static, so both run on Linux runners and find what only breaks for your Windows users.
 
 ## What this does not claim
 
