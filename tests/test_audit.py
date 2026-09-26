@@ -87,3 +87,11 @@ def test_scan_path_accepts_a_single_file(tmp_path):
     target = tmp_path / "m.py"
     target.write_text(BAD, encoding="utf-8")
     assert scan_path(str(target))
+
+
+def test_the_shipped_fixture_holds_one_of_each():
+    """The fixture the hook and the Action are smoke-tested against."""
+    fixture = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures",
+                           "windows_defects.py")
+    found = sorted(f.code for f in scan_path(fixture))
+    assert found == ["WS001", "WS001", "WS002", "WS003", "WS003", "WS004"], found

@@ -64,3 +64,23 @@ jobs:
       - run: python -m pip install -e .
       - name: winseam audit winseam
         run: python -m winseam.cli audit winseam
+
+  action:
+    name: the Action finds the fixture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # The composite action installs the published package; point it at the file
+      # that is deliberately wrong and assert it reports rather than passing quietly.
+      - id: audit
+        uses: ./
+        with:
+          path: tests/fixtures/windows_defects.py
+          fail-on-findings: "false"
+      - name: it found six
+        run: |
+          echo "findings=${{ steps.audit.outputs.findings }}"
+          test "${{ steps.audit.outputs.findings }}" = "6"

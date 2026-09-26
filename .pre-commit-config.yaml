@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: winseam-audit
+        name: winseam audit
+        entry: python -m winseam.cli audit
+        language: system
+        types: [python]
+        exclude: ^tests/fixtures/
