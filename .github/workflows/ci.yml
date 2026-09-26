@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        python: ["3.9", "3.13"]
+        include:
+          - os: windows-latest
+            python: "3.10"
+          - os: windows-latest
+            python: "3.11"
+          - os: windows-latest
+            python: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m winseam.cli doctor
+      - run: python -m pytest -q
+
+  # The bug this package exists for only appears when the console code page and
+  # the ANSI code page disagree, which the default en-US runner hides. Force a
+  # console page that differs and run the same suite against it.
+  codepages:
+    name: windows / console ${{ matrix.codepage }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        codepage: [866, 850, 932, 65001]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[dev]"
+      - name: doctor and tests under code page ${{ matrix.codepage }}
+        shell: cmd
+        run: |
+          chcp ${{ matrix.codepage }}
+          python -m winseam.cli doctor
+          python -m pytest -q
+
+  audit-self:
+    name: audit (dogfood)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e .
+      - name: winseam audit winseam
+        run: python -m winseam.cli audit winseam

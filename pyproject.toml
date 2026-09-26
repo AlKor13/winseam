@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "winseam"
+version = "0.1.0"
+description = "Make a Python tool behave the same on Windows: one correct decoder per child process, and file operations that survive read-only and locked files."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Alex Kor" }]
+keywords = ["windows", "encoding", "codepage", "subprocess", "mojibake", "cp1251", "cp866", "utf-8", "cli", "agents"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Utilities",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/AlKor13/winseam"
+Issues = "https://github.com/AlKor13/winseam/issues"
+
+[project.scripts]
+winseam = "winseam.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["winseam"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
