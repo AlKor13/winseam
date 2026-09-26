@@ -55,7 +55,7 @@ The seam moves. It does not close. `winseam.run` decides per child — it *confi
 run(args, encoding=None, input=None, check=False, **subprocess_kwargs)
 ```
 
-A `CompletedProcess` with `str` output, plus `.encoding` and `.encodings` (per stream). `text=True` is refused with a message rather than accepted and ignored. A `str` passed as `input` is encoded for that particular child, and never gets a BOM — PowerShell 5.1 adds one to the pipe it hands a child, and that byte has broken every header parser it has ever met.
+A `CompletedProcess` with `str` output, plus `.encoding` and `.encodings` (per stream). `text=True` is refused with a message rather than accepted and ignored. A `str` passed as `input` is encoded for that particular child, and never gets a BOM. Measured on PowerShell 5.1: `$OutputEncoding` defaults to `ASCIIEncoding`, so `café` reaches the child as `caf?`; set it to `[System.Text.Encoding]::UTF8` — the usual fix — and the bytes are right but carry a `ï»¿` preamble, which makes `json.loads` fail with *Expecting value: line 1 column 1*. `winseam.run` writes none, and tolerates one on the way in.
 
 **The filesystem**
 
@@ -63,7 +63,7 @@ A `CompletedProcess` with `str` output, plus `.encoding` and `.encodings` (per s
 read_text(path)      # utf-8, and a BOM written by another tool is not your problem
 write_text(path, s)  # utf-8, no BOM, '\n' stays '\n'
 read_json(path)      # the one that crashes in every bug report
-write_json(path, d)  # non-ASCII stays readable, not Тест
+write_json(path, d)  # ensure_ascii=False by default: readable text, not escaped
 
 rmtree(path)         # deletes read-only files -- i.e. can delete a .git directory
 replace(src, dst)    # survives a scanner holding the destination for a moment
