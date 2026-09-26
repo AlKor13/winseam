@@ -57,13 +57,17 @@ runs:
         status=$?
         set -e
 
-        winseam audit ${{ inputs.path }} --json > "$report"
+        # `winseam audit` exits 1 when it finds anything, which is what the human-readable
+        # run above is for. This second pass only produces the count, so it must not be the
+        # thing that decides the step's fate: --exit-zero, or `set -e` kills it here.
+        winseam audit ${{ inputs.path }} --json --exit-zero > "$report"
         count=$(python -c "import json,sys;print(len(json.load(open(sys.argv[1], encoding='utf-8'))))" "$report")
 
         echo "findings=$count" >> "$GITHUB_OUTPUT"
         echo "### winseam audit: $count finding(s)" >> "$GITHUB_STEP_SUMMARY"
 
         if [ -n "${{ inputs.json-output }}" ]; then
+          mkdir -p "$(dirname "${{ inputs.json-output }}")"
           mv "$report" "${{ inputs.json-output }}"
         else
           rm -f "$report"
