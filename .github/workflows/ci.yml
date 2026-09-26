@@ -82,8 +82,9 @@ jobs:
           fail-on-findings: "false"
       - name: it found six
         run: |
-          echo "findings=${{ steps.audit.outputs.findings }}"
-          test "${{ steps.audit.outputs.findings }}" = "6"
+          count="${{ steps.audit.outputs.findings }}"
+          echo "findings=[$count]"
+          test "$count" = "6"
 
   action-published-ref:
     name: the Action works by published ref
@@ -103,4 +104,8 @@ jobs:
           fail-on-findings: "false"
       - name: it reported something
         shell: bash
-        run: test "${{ steps.audit.outputs.findings }}" -ge 1
+        run: |
+          count="${{ steps.audit.outputs.findings }}"
+          echo "findings=[$count]"
+          test -n "$count" || { echo "the action produced no findings output"; exit 1; }
+          test "$count" -ge 1

@@ -22,7 +22,7 @@ inputs:
     required: false
     default: ""
   json-output:
-    description: Path to write the findings as JSON. Empty means no file.
+    description: Path to write the findings as JSON. Empty means no file is kept.
     required: false
     default: ""
 
@@ -47,17 +47,28 @@ runs:
       id: audit
       shell: bash
       run: |
+        # Relative filenames only. An absolute POSIX path such as /tmp/... is handed to a
+        # Windows interpreter verbatim, where it resolves to C:\tmp and does not exist --
+        # which is how this step used to report an empty count on windows runners.
+        report="winseam-audit-$GITHUB_RUN_ID.json"
+
         set +e
         winseam audit ${{ inputs.path }}
         status=$?
-        winseam audit ${{ inputs.path }} --json > /tmp/winseam.json
-        count=$(python -c "import json;print(len(json.load(open('/tmp/winseam.json',encoding='utf-8'))))")
+        set -e
+
+        winseam audit ${{ inputs.path }} --json > "$report"
+        count=$(python -c "import json,sys;print(len(json.load(open(sys.argv[1], encoding='utf-8'))))" "$report")
+
         echo "findings=$count" >> "$GITHUB_OUTPUT"
         echo "### winseam audit: $count finding(s)" >> "$GITHUB_STEP_SUMMARY"
+
         if [ -n "${{ inputs.json-output }}" ]; then
-          cp /tmp/winseam.json "${{ inputs.json-output }}"
+          mv "$report" "${{ inputs.json-output }}"
+        else
+          rm -f "$report"
         fi
+
         if [ "${{ inputs.fail-on-findings }}" = "true" ]; then
           exit $status
         fi
-        exit 0
