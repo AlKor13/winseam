@@ -84,3 +84,23 @@ jobs:
         run: |
           echo "findings=${{ steps.audit.outputs.findings }}"
           test "${{ steps.audit.outputs.findings }}" = "6"
+
+  action-published-ref:
+    name: the Action works by published ref
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Consumers write `uses: AlKor13/winseam@v0.1.0`, which resolves the tag and installs the
+      # published package -- a different path from `uses: ./`, and the one that breaks silently
+      # if a release is cut wrong. Run it on Windows too, since that is where consumers live.
+      - id: audit
+        uses: AlKor13/winseam@v0.1.0
+        with:
+          path: tests/fixtures/windows_defects.py
+          fail-on-findings: "false"
+      - name: it reported something
+        shell: bash
+        run: test "${{ steps.audit.outputs.findings }}" -ge 1
